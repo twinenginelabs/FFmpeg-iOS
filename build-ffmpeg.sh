@@ -25,10 +25,10 @@
 ###########################################################################
 #  Choose your ffmpeg version and your currently-installed iOS SDK version:
 #
-VERSION="2.2"
-SDKVERSION="7.1"
-MINIOSVERSION="6.0"
-VERIFYGPG=true
+VERSION="2.8.3"
+SDKVERSION="9.1"
+MINIOSVERSION="8.0"
+VERIFYGPG=false
 
 #
 #
@@ -197,7 +197,7 @@ done
 
 for ARCH in ${ARCHS}; do
     if [ "${ARCH}" == "i386" ] || [ "${ARCH}" == "x86_64" ]; then
-        PLATFORM="iPhoneSimulator"
+      continue
     else
         PLATFORM="iPhoneOS"
     fi
