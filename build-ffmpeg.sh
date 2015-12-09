@@ -66,12 +66,12 @@ mkdir -p ${OUTPUTDIR}/include
 mkdir -p ${OUTPUTDIR}/lib
 mkdir -p ${OUTPUTDIR}/bin
 
-
 BUILDDIR="${REPOROOT}/build"
 
 # where we will keep our sources and build from
 SRCDIR="${BUILDDIR}/src"
 mkdir -p $SRCDIR
+
 # where we will store intermediary builds
 INTERDIR="${BUILDDIR}/built"
 mkdir -p $INTERDIR
@@ -145,7 +145,7 @@ do
     if [ ! -d "$OUTPUT_DIR" ]; then
         mkdir -p ${OUTPUT_DIR}
 
-        ./configure --disable-programs --disable-shared --enable-static --enable-pic --enable-small --enable-librtmp --enable-openssl ${DEBUG_CONFIG_ARGS} \
+        ./configure --disable-programs --enable-shared --disable-static --enable-pic --enable-small ${DEBUG_CONFIG_ARGS} \
         --disable-decoders --enable-decoder=aac --enable-decoder=h264 \
         --disable-encoders --enable-encoder=aac \
         --disable-demuxers --enable-demuxer=aac --enable-demuxer=mov --enable-demuxer=mpegts --enable-demuxer=flv --enable-demuxer=h264 --enable-demuxer=caf \
@@ -172,7 +172,7 @@ done
 echo "Build library..."
 
 # These are the libs that comprise ffmpeg.
-OUTPUT_LIBS="libavcodec.a libavdevice.a libavfilter.a libavformat.a libavutil.a libswresample.a libswscale.a"
+OUTPUT_LIBS="libavcodec.dylib libavdevice.dylib libavfilter.dylib libavformat.dylib libavutil.dylib libswresample.dylib libswscale.dylib"
 for OUTPUT_LIB in ${OUTPUT_LIBS}; do
     INPUT_LIBS=""
     for ARCH in ${ARCHS}; do
@@ -181,12 +181,14 @@ for OUTPUT_LIB in ${OUTPUT_LIBS}; do
         else
             PLATFORM="iPhoneOS"
         fi
+
         INPUT_ARCH_LIB="${INTERDIR}/${PLATFORM}${SDKVERSION}-${ARCH}.sdk/lib/${OUTPUT_LIB}"
         if [ -e $INPUT_ARCH_LIB ]; then
             INPUT_LIBS="${INPUT_LIBS} -arch ${ARCH} ${INPUT_ARCH_LIB}"
         fi
     done
-    # Combine the three architectures into a universal library.
+
+    # Combine the architectures into a universal library.
     if [ -n "$INPUT_LIBS"  ]; then
         xcrun -sdk iphoneos lipo -create $INPUT_LIBS \
         -output "${OUTPUTDIR}/lib/${OUTPUT_LIB}"
@@ -197,11 +199,13 @@ done
 
 for ARCH in ${ARCHS}; do
     if [ "${ARCH}" == "i386" ] || [ "${ARCH}" == "x86_64" ]; then
-      continue
+        PLATFORM="iPhoneSimulator"
     else
         PLATFORM="iPhoneOS"
     fi
+
     cp -R ${INTERDIR}/${PLATFORM}${SDKVERSION}-${ARCH}.sdk/include/* ${OUTPUTDIR}/include/
+
     if [ $? == "0" ]; then
         # We only need to copy the headers over once. (So break out of forloop
         # once we get first success.)
